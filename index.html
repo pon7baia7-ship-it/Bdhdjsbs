@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Добро пожаловать</title>
+<style>
+:root{--bg:#f4f1ff;--fg:#1d1633;--ac:#7c4dff;--ac2:#ff5c8a;--mut:#6b6485}
+@media (prefers-color-scheme:dark){:root{--bg:#0f0b1e;--fg:#f3efff;--ac:#9d7bff;--mut:#a89fc7}}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;box-sizing:border-box}
+h1{font-size:clamp(32px,8vw,56px);margin:0;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+p{margin:0;color:var(--mut);font-size:16px}
+button{font:inherit;font-weight:600;color:var(--fg);background:transparent;border:1.5px solid var(--ac);border-radius:999px;padding:10px 24px;cursor:pointer;font-size:15px}
+.bars{display:flex;gap:6px;align-items:flex-end;height:120px}
+.bars i{width:10px;height:100%;background:linear-gradient(var(--ac2),var(--ac));border-radius:4px;transform-origin:bottom;animation:b .9s ease-in-out infinite alternate}
+@keyframes b{from{transform:scaleY(.1)}to{transform:scaleY(1)}}
+.paused .bars i{animation-play-state:paused}
+</style>
+</head>
+<body>
+<div class="screen" id="page">
+  <h1>Добро пожаловать 🎶</h1>
+  <p id="hint">Загрузка музыки…</p>
+  <div class="bars" id="bars"></div>
+  <button id="toggle">⏸ Пауза</button>
+</div>
+<script>
+// ====================================================================
+// ⬇⬇⬇  ВСТАВЬ ИМЯ СВОЕГО ФАЙЛА СЮДА (внутри кавычек)  ⬇⬇⬇
+
+const SONG = "67.mp3";
+
+// ⬆⬆⬆  Файл с песней должен лежать В ТОЙ ЖЕ ПАПКЕ, что и этот html  ⬆⬆⬆
+// ====================================================================
+
+const page = document.getElementById('page'),
+      hint = document.getElementById('hint'),
+      toggle = document.getElementById('toggle'),
+      bars = document.getElementById('bars');
+
+for (let i = 0; i < 24; i++) {
+  const b = document.createElement('i');
+  b.style.animationDuration = (0.5 + Math.random() * 0.7) + 's';
+  b.style.animationDelay = (-Math.random()) + 's';
+  bars.appendChild(b);
+}
+
+const audio = new Audio(SONG);
+audio.loop = true;
+
+const evs = ['pointerdown', 'keydown', 'touchstart', 'click'];
+function onGesture(e) {
+  if (e.target === toggle) return;
+  audio.play().catch(() => {});
+}
+
+audio.addEventListener('play', () => {
+  hint.textContent = 'Играет музыка — наслаждайся';
+  toggle.textContent = '⏸ Пауза';
+  page.classList.remove('paused');
+  evs.forEach(e => removeEventListener(e, onGesture, true));
+});
+audio.addEventListener('pause', () => {
+  toggle.textContent = '▶ Играть';
+  page.classList.add('paused');
+});
+audio.addEventListener('error', () => {
+  hint.textContent = 'Не нашёл файл «' + SONG + '». Положи его рядом с этим html.';
+  page.classList.add('paused');
+});
+
+toggle.onclick = () => { audio.paused ? audio.play() : audio.pause(); };
+
+// Пытаемся включить сразу; если браузер не разрешил — включится от первого касания/клика/клавиши
+audio.play().catch(() => {
+  hint.textContent = 'Коснись экрана в любом месте — и заиграет музыка';
+  page.classList.add('paused');
+  evs.forEach(e => addEventListener(e, onGesture, true));
+});
+</script>
+</body>
+</html>
